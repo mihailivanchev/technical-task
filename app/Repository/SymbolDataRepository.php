@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Log;
 
 class SymbolDataRepository
 {
+    const DEFAULT_SYMBOL_ID = 1;
+
     /**
      * @return array
      */
@@ -27,5 +29,19 @@ class SymbolDataRepository
         }
 
         return $chartData;
+    }
+
+    public function saveSymbolData(array $symbolData): bool
+    {
+        // Fetch id of desired symbol. I commented this out as we're working with just 1 symbol
+//            $symbol = Symbol::where('name', 'BTCUSD')->first();
+//            $symbolData['symbol_id'] = $symbol->getAttribute('id');
+        $symbolData['symbol_id'] = self::DEFAULT_SYMBOL_ID;
+        $symbolDataRecord = new SymbolData();
+        foreach ($symbolDataRecord->getFillable() as $column) {
+            $symbolDataRecord->{$column} = $symbolData[$column];
+        }
+
+        return $symbolDataRecord->save();
     }
 }

@@ -3,9 +3,8 @@
 namespace App\Jobs;
 
 use App\Models\SymbolData;
+use App\Repository\SymbolDataRepository;
 use App\Services\BitFinexApiService;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -18,7 +17,6 @@ class FetchSymbolData implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    const DEFAULT_SYMBOL_ID = 1;
     /**
      * Create a new job instance.
      *
@@ -40,27 +38,14 @@ class FetchSymbolData implements ShouldQueue
         try {
             $api = new BitFinexApiService();
             $symbolData = $api->getInstrumentData();
-            // Fetch id of desired symbol. I commented this out as we're working with just 1 symbol
-//            $symbol = Symbol::where('name', 'BTCUSD')->first();
-//            $symbolData['symbol_id'] = $symbol->getAttribute('id');
-            $symbolData['symbol_id'] = self::DEFAULT_SYMBOL_ID;
-            $symbolDataRecord = new SymbolData();
-            foreach ($symbolDataRecord->getFillable() as $column) {
-                $symbolDataRecord->{$column} = $symbolData[$column];
-            }
-            $dataSaved = $symbolDataRecord->save();
+            $dataSaved = (new SymbolDataRepository())->saveSymbolData($symbolData);
+
             if ($dataSaved) {
                 Log::info('Symbol data saved to DB');
             } else {
                 Log::info('Symbol data could not be saved to DB');
             }
-        } catch (GuzzleException $exception) {
-            Log::error('Request for fetching symbol data failed. See debug log for details');
-            Log::debug($exception);
-        } catch (ModelNotFoundException $exception) {
-            Log::error('Could not find symbol. See debug log for details');
-            Log::debug($exception);
-        } catch (\ErrorException $exception) {
+        } catch (\Exception $exception) {
             Log::error('Unknown error occurred. See debug log for details');
             Log::debug($exception);
         }

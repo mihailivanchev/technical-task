@@ -22,7 +22,6 @@ class BitFinexApiServiceTest extends TestCase
         $instrumentData = $apiService->getInstrumentData();
         $this->assertIsArray($instrumentData);
         $this->assertGreaterThanOrEqual(1, count($instrumentData));
-        $this->assertIsArray($instrumentData);
 
         $this->assertArrayHasKey('mid', $instrumentData);
         $this->assertArrayHasKey('bid', $instrumentData);

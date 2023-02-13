@@ -23,13 +23,13 @@ class SymbolDataRepositoryTest extends TestCase
     {
         $repo = new SymbolDataRepository();
         Symbol::factory()->create();
-        SymbolData::factory()->count(5)->create();
+        SymbolData::factory()->count(3)->create();
         $chartData = $repo->getChartData();
 
         $this->assertGreaterThanOrEqual(1, $chartData);
-        $randomKey = rand(0, count($chartData) - 1);
-
-        $this->assertArrayHasKey('timestamp', $chartData[$randomKey]);
-        $this->assertArrayHasKey('value', $chartData[$randomKey]);
+        foreach ($chartData as $record) {
+            $this->assertArrayHasKey('timestamp', $record);
+            $this->assertArrayHasKey('value', $record);
+        }
     }
 }
